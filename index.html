@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0c1118">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Quinté Pro — Analyse IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c1118;
+  --surface: #131b26;
+  --card: #1a2535;
+  --border: #1e2e42;
+  --border2: #253548;
+  --gold: #e8b84b;
+  --gold2: #b8891a;
+  --gold-dim: #e8b84b22;
+  --green: #2ecc8a;
+  --red: #e05252;
+  --blue: #4a9eff;
+  --purple: #9b72e8;
+  --text: #dde6f0;
+  --muted: #5a7a9a;
+  --subtle: #2a3d55;
+  --font-display: 'Syne', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-body: 'Instrument Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(180deg, #0e1620 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.logo {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--gold);
+}
+.logo em { color: var(--text); font-style: normal; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.badge-race {
+  font-family: var(--font-mono);
+  font-size: 11px; padding: 4px 10px;
+  border: 1px solid var(--border2);
+  border-radius: 20px; color: var(--muted);
+}
+#status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--muted); transition: background 0.3s;
+}
+#status-dot.active { background: var(--green); box-shadow: 0 0 8px var(--green); }
+#status-dot.loading { background: var(--gold); animation: pulse 1s infinite; }
+#status-dot.error { background: var(--red); }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ── NAV ── */
+.nav {
+  display: flex; gap: 2px; padding: 12px 28px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.nav-btn {
+  background: transparent; border: none;
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  color: var(--muted); padding: 8px 16px; border-radius: 8px;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.nav-btn:hover { color: var(--text); background: var(--card); }
+.nav-btn.active { color: var(--gold); background: var(--gold-dim); }
+
+/* ── MAIN ── */
+.main { padding: 24px 28px; max-width: 1200px; margin: 0 auto; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
+}
+.card-title {
+  font-family: var(--font-mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--muted); margin-bottom: 16px;
+}
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.mb16 { margin-bottom: 16px; }
+.mb24 { margin-bottom: 24px; }
+
+/* ── FORMULAIRE SOURCE ── */
+.source-group {
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px; margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+.source-group.done { border-color: var(--green)40; }
+.source-group.loading { border-color: var(--gold)40; }
+.source-group.error { border-color: var(--red)40; }
+
+.source-header {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 10px;
+}
+.source-name {
+  font-family: var(--font-mono); font-size: 12px;
+  font-weight: 500; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.source-status {
+  font-size: 11px; padding: 3px 8px; border-radius: 10px;
+  font-family: var(--font-mono);
+}
+.s-wait { background: var(--subtle); color: var(--muted); }
+.s-ok { background: var(--green)20; color: var(--green); }
+.s-err { background: var(--red)20; color: var(--red); }
+.s-load { background: var(--gold)20; color: var(--gold); }
+
+.url-row { display: flex; gap: 8px; }
+input[type=text], input[type=url] {
+  flex: 1; background: var(--surface);
+  border: 1px solid var(--border); color: var(--text);
+  padding: 8px 12px; border-radius: 8px;
+  font-size: 12px; font-family: var(--font-mono);
+  outline: none; transition: border-color 0.2s;
+}
+input:focus { border-color: var(--gold)60; }
+
+.upload-zone {
+  border: 1px dashed var(--border2); border-radius: 8px;
+  padding: 14px; text-align: center; cursor: pointer;
+  transition: all 0.2s; position: relative;
+}
+.upload-zone:hover { border-color: var(--gold)60; background: var(--gold-dim); }
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.upload-zone-text { font-size: 12px; color: var(--muted); }
+.upload-zone-text strong { color: var(--gold); }
+.upload-preview { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.preview-img {
+  width: 60px; height: 60px; object-fit: cover;
+  border-radius: 6px; border: 1px solid var(--border);
+}
+
+/* ── BOUTONS ── */
+.btn {
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border: none; color: #000; padding: 10px 22px;
+  border-radius: 8px; cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  font-family: var(--font-body);
+  transition: all 0.2s; display: inline-flex;
+  align-items: center; gap: 8px;
+}
+.btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-sm { padding: 7px 14px; font-size: 12px; }
+.btn-ghost {
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--muted); padding: 10px 22px; border-radius: 8px;
+  cursor: pointer; font-size: 13px;
+  font-family: var(--font-body); transition: all 0.2s;
+}
+.btn-ghost:hover { border-color: var(--gold)50; color: var(--text); }
+
+/* ── TABLEAU RÉSULTATS ── */
+.results-table { width: 100%; border-collapse: collapse; }
+.results-table th {
+  text-align: left; padding: 10px 12px;
+  font-family: var(--font-mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted); border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.results-table td {
+  padding: 11px 12px; border-bottom: 1px solid var(--border)40;
+  font-size: 13px; vertical-align: middle;
+}
+.results-table tr:hover td { background: var(--surface); }
+.results-table tr.rank1 td { background: var(--gold)08; }
+
+.num-badge {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+  border: 2px solid var(--border2);
+}
+
+.rank-badge {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+}
+.rank-1 { background: var(--gold); color: #000; }
+.rank-2 { background: var(--subtle); color: var(--text); }
+.rank-3 { background: #3a4a3a; color: var(--green); }
+
+.bar-wrap { width: 80px; height: 5px; background: var(--border); border-radius: 3px; }
+.bar-fill { height: 100%; border-radius: 3px; }
+
+.pill {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-family: var(--font-mono); font-weight: 500;
+}
+.pill-gold { background: var(--gold)20; color: var(--gold); border: 1px solid var(--gold)30; }
+.pill-green { background: var(--green)20; color: var(--green); border: 1px solid var(--green)30; }
+.pill-red { background: var(--red)20; color: var(--red); border: 1px solid var(--red)30; }
+.pill-blue { background: var(--blue)20; color: var(--blue); border: 1px solid var(--blue)30; }
+.pill-gray { background: var(--subtle); color: var(--muted); }
+
+/* ── RECOMMANDATION ── */
+.reco-box {
+  background: linear-gradient(135deg, var(--gold)12, var(--gold)05);
+  border: 1px solid var(--gold)40; border-radius: 14px;
+  padding: 24px; margin-bottom: 24px;
+}
+.reco-title {
+  font-family: var(--font-display); font-size: 13px;
+  font-weight: 700; color: var(--gold);
+  text-transform: uppercase; letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+.reco-nums {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.reco-num {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 16px; font-weight: 700;
+  border: 2px solid var(--gold);
+  background: var(--gold)15; color: var(--gold);
+}
+.reco-num.base { background: var(--gold); color: #000; border-color: var(--gold); }
+.reco-num.cover { border-color: var(--border2); color: var(--muted); background: transparent; }
+.reco-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.confidence-bar {
+  display: flex; align-items: center; gap: 10px; margin-top: 12px;
+}
+.conf-track {
+  flex: 1; height: 6px; background: var(--border);
+  border-radius: 3px; overflow: hidden;
+}
+.conf-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+.conf-label { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+
+/* ── STAT MINI ── */
+.stat-mini { text-align: center; }
+.stat-mini-val {
+  font-family: var(--font-mono); font-size: 24px;
+  font-weight: 600; color: var(--text);
+}
+.stat-mini-label { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* ── VALUE BET ── */
+.value-positive { color: var(--green); font-weight: 600; }
+.value-negative { color: var(--red); }
+.value-neutral { color: var(--muted); }
+
+/* ── LOG ── */
+.log-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--muted); max-height: 200px; overflow-y: auto;
+  line-height: 1.8;
+}
+.log-box .ok { color: var(--green); }
+.log-box .warn { color: var(--gold); }
+.log-box .err { color: var(--red); }
+.log-box .info { color: var(--blue); }
+
+/* ── ALERT ── */
+.alert {
+  padding: 12px 16px; border-radius: 8px;
+  font-size: 13px; margin-bottom: 16px;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.alert-info { background: var(--blue)12; border: 1px solid var(--blue)30; color: var(--blue); }
+.alert-warn { background: var(--gold)12; border: 1px solid var(--gold)30; color: var(--gold); }
+
+/* ── BACKTESTING ── */
+.bt-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; border-bottom: 1px solid var(--border)40; font-size: 13px;
+}
+.bt-date { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.bt-nums { font-family: var(--font-mono); font-size: 12px; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── LOADING SPINNER ── */
+.spinner {
+  width: 16px; height: 16px; border: 2px solid var(--border2);
+  border-top-color: var(--gold); border-radius: 50%;
+  animation: spin 0.7s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .main { padding: 16px; }
+  .header { padding: 14px 16px; }
+  .nav { padding: 10px 16px; }
+  .grid2, .grid3, .grid4 { grid-template-columns: 1fr; }
+  .results-table { font-size: 12px; }
+  .results-table td, .results-table th { padding: 8px 8px; }
+}
+
+/* ── DIVIDER ── */
+hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; }
+.gap8 { gap: 8px; }
+.gap12 { gap: 12px; }
+.jb { justify-content: space-between; }
+.col { flex-direction: column; }
+.mt8 { margin-top: 8px; }
+.mt16 { margin-top: 16px; }
+.w100 { width: 100%; }
+.text-gold { color: var(--gold); }
+.text-muted { color: var(--muted); font-size: 12px; }
+.text-mono { font-family: var(--font-mono); }
+.bold { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">QUINTÉ<em>PRO</em></div>
+  <div class="header-right">
+    <div class="badge-race" id="badge-race">Aucune course chargée</div>
+    <div id="status-dot"></div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('collect')">① Collecte</button>
+  <button class="nav-btn" onclick="showPage('analyse')">② Analyse Borda</button>
+  <button class="nav-btn" onclick="showPage('reco')">③ Recommandation</button>
+  <button class="nav-btn" onclick="showPage('backtest')">④ Historique</button>
+</nav>
+
+<div class="main">
+
+<!-- ══════════════════════════════════════════════
+     PAGE 1 — COLLECTE
+══════════════════════════════════════════════ -->
+<div id="page-collect" class="page active">
+
+  <div class="alert alert-info mb16">
+    ℹ️ L'appli détecte automatiquement le Quinté+ du jour, construit les URLs et fetch les sources textuelles. Uploadez ensuite les 2 captures d'écran pour les données chiffrées (tableau turf.bzh + presse zone-turf).
+  </div>
+
+  <!-- Détection automatique -->
+  <div class="card mb16">
+    <div class="card-title">🎯 Détection automatique du Quinté+</div>
+    <div class="flex-center gap12 mb16" style="flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div class="text-muted mb8">Date de la course</div>
+        <input type="text" id="input-date" placeholder="2026-04-13 (auto)" style="width:100%">
+      </div>
+      <div style="flex:1;min-width:120px">
+        <div class="text-muted mb8">Réunion</div>
+        <input type="text" id="input-reunion" placeholder="R1 (auto)" style="width:100%">
+      </div>
+      <div style="flex:1;min-width:120px">
+        <div class="text-muted mb8">Course</div>
+        <input type="text" id="input-course" placeholder="C1 (auto)" style="width:100%">
+      </div>
+      <div style="flex:1;min-width:160px">
+        <div class="text-muted mb8">Hippodrome</div>
+        <input type="text" id="input-hippo" placeholder="AUTEUIL (auto)" style="width:100%">
+      </div>
+    </div>
+    <div class="flex gap8">
+      <button class="btn" onclick="autoDetect()">🔍 Détection auto</button>
+      <button class="btn-ghost" onclick="manualFill()">Remplir manuellement</button>
+    </div>
+  </div>
+
+  <!-- Sources textuelles (fetch auto) -->
+  <div class="card mb16">
+    <div class="card-title">🌐 Sources textuelles — Fetch automatique</div>
+
+    <div class="source-group" id="src-pmu">
+      <div class="source-header">
+        <div class="source-name">🐴 PMU.fr — Partants officiels</div>
+        <span class="source-status s-wait" id="st-pmu">En attente</span>
+      </div>
+      <div class="url-row">
+        <input type="url" id="url-pmu" placeholder="Auto-généré après détection...">
+        <button class="btn btn-sm" onclick="fetchSource('pmu')">Fetch</button>
+      </div>
+    </div>
+
+    <div class="source-group" id="src-bzh">
+      <div class="source-header">
+        <div class="source-name">🤖 turf.bzh — Borda 10 IA + ELO article</div>
+        <span class="source-status s-wait" id="st-bzh">En attente</span>
+      </div>
+      <div class="url-row">
+        <input type="url" id="url-bzh" placeholder="Auto-généré...">
+        <button class="btn btn-sm" onclick="fetchSource('bzh')">Fetch</button>
+      </div>
+    </div>
+
+    <div class="source-group" id="src-zeturf">
+      <div class="source-header">
+        <div class="source-name">🏇 ZEturf — Pronostic + commentaires</div>
+        <span class="source-status s-wait" id="st-zeturf">En attente</span>
+      </div>
+      <div class="url-row">
+        <input type="url" id="url-zeturf" placeholder="Auto-généré...">
+        <button class="btn btn-sm" onclick="fetchSource('zeturf')">Fetch</button>
+      </div>
+    </div>
+
+    <div class="source-group" id="src-equidia">
+      <div class="source-header">
+        <div class="source-name">📺 Equidia — Analyse narrative</div>
+        <span class="source-status s-wait" id="st-equidia">En attente</span>
+      </div>
+      <div class="url-row">
+        <input type="url" id="url-equidia" placeholder="Auto-généré...">
+        <button class="btn btn-sm" onclick="fetchSource('equidia')">Fetch</button>
+      </div>
+    </div>
+
+    <div class="mt16">
+      <button class="btn" onclick="fetchAllSources()">⚡ Tout fetcher en une fois</button>
+    </div>
+  </div>
+
+  <!-- Captures d'écran -->
+  <div class="card mb16">
+    <div class="card-title">📸 Captures d'écran — Extraction vision IA</div>
+
+    <div class="grid2">
+      <div>
+        <div class="text-muted mb8">Tableau turf.bzh (ELO, cotes, popularité, %IA)</div>
+        <div class="upload-zone" id="zone-bzh-img" onclick="document.getElementById('inp-bzh').click()">
+          <input type="file" id="inp-bzh" accept="image/*" multiple onchange="previewImages('inp-bzh','prev-bzh','zone-bzh-img')">
+          <div class="upload-zone-text">
+            <strong>Cliquez ou déposez</strong> vos captures<br>
+            <span style="font-size:11px">Plusieurs images acceptées</span>
+          </div>
+          <div class="upload-preview" id="prev-bzh"></div>
+        </div>
+      </div>
+      <div>
+        <div class="text-muted mb8">Tableau presse zone-turf (rangs Bilto, Parisien, etc.)</div>
+        <div class="upload-zone" id="zone-zt-img" onclick="document.getElementById('inp-zt').click()">
+          <input type="file" id="inp-zt" accept="image/*" multiple onchange="previewImages('inp-zt','prev-zt','zone-zt-img')">
+          <div class="upload-zone-text">
+            <strong>Cliquez ou déposez</strong> vos captures<br>
+            <span style="font-size:11px">Plusieurs images acceptées</span>
+          </div>
+          <div class="upload-preview" id="prev-zt"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt16">
+      <button class="btn" onclick="extractImages()" id="btn-extract">
+        🔬 Extraire les données (Claude Vision)
+      </button>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="card mb16">
+    <div class="card-title">📋 Journal de collecte</div>
+    <div class="log-box" id="log-box">
+      <span class="info">→ Prêt. Cliquez sur "Détection auto" pour commencer.</span>
+    </div>
+  </div>
+
+  <div class="flex gap8">
+    <button class="btn" onclick="goToAnalysis()" id="btn-analyse" disabled>
+      → Aller à l'analyse Borda
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 2 — ANALYSE BORDA
+══════════════════════════════════════════════ -->
+<div id="page-analyse" class="page">
+
+  <div class="grid4 mb24" id="stats-summary">
+    <div class="card stat-mini">
+      <div class="stat-mini-val" id="s-partants">—</div>
+      <div class="stat-mini-label">Partants</div>
+    </div>
+    <div class="card stat-mini">
+      <div class="stat-mini-val" id="s-sources">—</div>
+      <div class="stat-mini-label">Sources actives</div>
+    </div>
+    <div class="card stat-mini">
+      <div class="stat-mini-val" id="s-consensus">—</div>
+      <div class="stat-mini-label">Indice consensus</div>
+    </div>
+    <div class="card stat-mini">
+      <div class="stat-mini-val" id="s-terrain">—</div>
+      <div class="stat-mini-label">Terrain</div>
+    </div>
+  </div>
+
+  <!-- Pondérations Borda -->
+  <div class="card mb16">
+    <div class="card-title">⚖️ Pondérations Borda — Ajustables</div>
+    <div class="grid3" id="weights-grid">
+      <!-- Généré dynamiquement -->
+    </div>
+    <div class="mt16">
+      <button class="btn btn-sm" onclick="recalcBorda()">↻ Recalculer</button>
+      <button class="btn-ghost btn-sm" style="margin-left:8px" onclick="resetWeights()">Réinitialiser</button>
+    </div>
+  </div>
+
+  <!-- Tableau Borda -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
+      <div class="card-title" style="margin:0">📊 Classement Borda consolidé</div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="results-table" id="borda-table">
+        <thead>
+          <tr>
+            <th>Rang</th>
+            <th>N°</th>
+            <th>Cheval</th>
+            <th>Score Borda</th>
+            <th>Presse</th>
+            <th>IA bzh</th>
+            <th>%Quinté</th>
+            <th>Note IA</th>
+            <th>Popularité</th>
+            <th>Value Bet</th>
+            <th>Signal</th>
+          </tr>
+        </thead>
+        <tbody id="borda-tbody">
+          <tr><td colspan="11" style="text-align:center;color:var(--muted);padding:40px">
+            Collectez les données (étape 1) pour voir l'analyse
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 3 — RECOMMANDATION
+══════════════════════════════════════════════ -->
+<div id="page-reco" class="page">
+
+  <div id="reco-container">
+    <div style="text-align:center;padding:60px;color:var(--muted)">
+      Lancez l'analyse Borda pour voir la recommandation
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 4 — HISTORIQUE / BACKTEST
+══════════════════════════════════════════════ -->
+<div id="page-backtest" class="page">
+
+  <div class="grid3 mb24">
+    <div class="card stat-mini">
+      <div class="stat-mini-val text-gold" id="bt-courses">0</div>
+      <div class="stat-mini-label">Courses analysées</div>
+    </div>
+    <div class="card stat-mini">
+      <div class="stat-mini-val" id="bt-top5">—</div>
+      <div class="stat-mini-label">Taux top 5 trouvé</div>
+    </div>
+    <div class="card stat-mini">
+      <div class="stat-mini-val" id="bt-value">—</div>
+      <div class="stat-mini-label">Value bets gagnants</div>
+    </div>
+  </div>
+
+  <div class="card mb16">
+    <div class="card-title">📥 Enregistrer l'arrivée officielle</div>
+    <div class="flex gap8 mb16" style="flex-wrap:wrap">
+      <input type="text" id="bt-arr1" placeholder="1er" style="width:60px">
+      <input type="text" id="bt-arr2" placeholder="2e" style="width:60px">
+      <input type="text" id="bt-arr3" placeholder="3e" style="width:60px">
+      <input type="text" id="bt-arr4" placeholder="4e" style="width:60px">
+      <input type="text" id="bt-arr5" placeholder="5e" style="width:60px">
+      <button class="btn btn-sm" onclick="saveResult()">💾 Enregistrer</button>
+    </div>
+    <div class="text-muted">Entrez les numéros des 5 premiers à l'arrivée officielle.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📈 Historique des courses</div>
+    <div id="bt-list">
+      <div style="color:var(--muted);font-size:13px;padding:20px 0">Aucune course enregistrée.</div>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+const STATE = {
+  date: '',
+  dateFormatted: '',
+  reunion: '',
+  course: '',
+  hippo: '',
+  hippoSlug: '',
+  sources: {
+    pmu: { status: 'wait', data: null },
+    bzh: { status: 'wait', data: null },
+    zeturf: { status: 'wait', data: null },
+    equidia: { status: 'wait', data: null },
+  },
+  images: { bzh: [], zt: [] },
+  horses: [],       // tableau final consolidé
+  activeSourcesCount: 0,
+  weights: {
+    presse: 0.20,
+    bzhIA: 0.25,
+    elo: 0.20,
+    quinteProb: 0.20,
+    noteIA: 0.15,
+  }
+};
+
+const HISTORY = JSON.parse(localStorage.getItem('quinte_history') || '[]');
+
+// ═══════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+// LOG
+// ═══════════════════════════════════════════════════
+function log(msg, type = 'info') {
+  const box = document.getElementById('log-box');
+  const line = document.createElement('div');
+  line.className = type;
+  const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  line.textContent = `[${time}] ${msg}`;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════════
+// AUTO DETECT
+// ═══════════════════════════════════════════════════
+async function autoDetect() {
+  setDot('loading');
+  log('Détection automatique du Quinté+ du jour...', 'info');
+
+  // Date du jour
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  STATE.date = `${yyyy}-${mm}-${dd}`;
+  STATE.dateFormatted = `${dd}${mm}${yyyy}`;
+
+  document.getElementById('input-date').value = STATE.date;
+
+  // On va tenter de détecter via l'API Claude
+  // Pour l'instant, on génère les URLs avec des valeurs par défaut
+  // et on laisse Claude extraire depuis la page programme PMU
+  log(`Date détectée : ${STATE.date}`, 'ok');
+
+  // Construire l'URL du programme PMU
+  const pmuProgramURL = `https://www.pmu.fr/turf/${STATE.date}/programme`;
+  log(`Tentative fetch programme PMU : ${pmuProgramURL}`, 'info');
+
+  try {
+    const result = await callClaudeWithText(
+      `Fetch et analyse ce programme PMU pour trouver la course Quinté+ du jour. URL: ${pmuProgramURL}. 
+       Réponds UNIQUEMENT en JSON : {"reunion":"R1","course":"C1","hippodrome":"AUTEUIL","hippoSlug":"auteuil"}`,
+      []
+    );
+
+    try {
+      const parsed = JSON.parse(result.replace(/```json|```/g, '').trim());
+      STATE.reunion = parsed.reunion || 'R1';
+      STATE.course = parsed.course || 'C1';
+      STATE.hippo = parsed.hippodrome || 'AUTEUIL';
+      STATE.hippoSlug = parsed.hippoSlug || 'auteuil';
+    } catch(e) {
+      // Fallback valeurs par défaut
+      STATE.reunion = 'R1';
+      STATE.course = 'C1';
+      STATE.hippo = 'AUTEUIL';
+      STATE.hippoSlug = 'auteuil';
+      log('Fallback valeurs par défaut (modifiez si nécessaire)', 'warn');
+    }
+  } catch(e) {
+    STATE.reunion = 'R1';
+    STATE.course = 'C1';
+    STATE.hippo = 'AUTEUIL';
+    STATE.hippoSlug = 'auteuil';
+    log('Détection auto échouée — valeurs par défaut appliquées', 'warn');
+  }
+
+  document.getElementById('input-reunion').value = STATE.reunion;
+  document.getElementById('input-course').value = STATE.course;
+  document.getElementById('input-hippo').value = STATE.hippo;
+
+  buildURLs();
+  setDot('active');
+  log(`Course cible : ${STATE.hippo} ${STATE.reunion}${STATE.course}`, 'ok');
+}
+
+function manualFill() {
+  STATE.date = document.getElementById('input-date').value || new Date().toISOString().split('T')[0];
+  const parts = STATE.date.split('-');
+  STATE.dateFormatted = `${parts[2]}${parts[1]}${parts[0]}`;
+  STATE.reunion = document.getElementById('input-reunion').value || 'R1';
+  STATE.course = document.getElementById('input-course').value || 'C1';
+  STATE.hippo = document.getElementById('input-hippo').value || 'AUTEUIL';
+  STATE.hippoSlug = STATE.hippo.toLowerCase().replace(/ /g, '-').replace(/é/g, 'e').replace(/è/g, 'e');
+  buildURLs();
+  log(`Configuration manuelle : ${STATE.hippo} ${STATE.reunion}${STATE.course}`, 'ok');
+}
+
+function buildURLs() {
+  const r = STATE.reunion.toLowerCase();
+  const c = STATE.course.toLowerCase();
+  const rNum = STATE.reunion.replace('R', '');
+  const cNum = STATE.course.replace('C', '');
+
+  document.getElementById('url-pmu').value =
+    `https://www.pmu.fr/turf/${STATE.date}/${STATE.hippo}/${STATE.reunion}/${STATE.course}/partants`;
+
+  document.getElementById('url-bzh').value =
+    `https://www.turf.bzh/pronostics-quinte-ia-${STATE.date}.html`;
+
+  // ZEturf : on met l'URL de la réunion, l'appli trouvera la course
+  document.getElementById('url-zeturf').value =
+    `https://www.zeturf.fr/fr/reunion-du-jour/${STATE.date}/${STATE.reunion.toLowerCase()}-${STATE.hippoSlug}`;
+
+  document.getElementById('url-equidia').value =
+    `https://www.equidia.fr/courses/${STATE.date}/${STATE.reunion}/${STATE.course}`;
+
+  document.getElementById('badge-race').textContent =
+    `${STATE.hippo} · ${STATE.reunion}${STATE.course} · ${STATE.date}`;
+
+  log('URLs construites automatiquement', 'ok');
+}
+
+// ═══════════════════════════════════════════════════
+// FETCH SOURCES
+// ═══════════════════════════════════════════════════
+async function fetchSource(src) {
+  const url = document.getElementById(`url-${src}`).value.trim();
+  if (!url) { log(`URL ${src} vide`, 'err'); return; }
+
+  setSourceStatus(src, 'load', '⏳ Fetch...');
+  log(`Fetch ${src} : ${url}`, 'info');
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `Fetch cette URL et extrais les données de pronostic hippique pertinentes en JSON structuré.
+URL: ${url}
+Source: ${src}
+
+Pour PMU : extrait les partants (num, nom, jockey, entraineur, poids, musique, gains).
+Pour turf.bzh IA : extrait le tableau Borda des 10 IA (rang, num, cheval, score) et les ELO mentionnés.
+Pour ZEturf : extrait l'ordre de sélection (liste des numéros dans l'ordre de pronostic).
+Pour Equidia : extrait la hiérarchie des chevaux cités (du plus au moins favorisé).
+
+Réponds UNIQUEMENT en JSON valide, sans markdown.`
+        }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.map(c => c.text || '').join('') || '';
+
+    try {
+      const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+      STATE.sources[src] = { status: 'ok', data: parsed };
+      setSourceStatus(src, 'ok', '✓ OK');
+      log(`${src} : données extraites avec succès`, 'ok');
+    } catch(e) {
+      // Stocke le texte brut si pas du JSON valide
+      STATE.sources[src] = { status: 'ok', data: { raw: text } };
+      setSourceStatus(src, 'ok', '✓ Texte brut');
+      log(`${src} : extrait en texte brut`, 'warn');
+    }
+  } catch(e) {
+    STATE.sources[src] = { status: 'error', data: null };
+    setSourceStatus(src, 'err', '✗ Erreur');
+    log(`${src} : erreur fetch — ${e.message}`, 'err');
+  }
+
+  checkAllDone();
+}
+
+async function fetchAllSources() {
+  log('Fetch de toutes les sources...', 'info');
+  await fetchSource('pmu');
+  await fetchSource('bzh');
+  await fetchSource('zeturf');
+  await fetchSource('equidia');
+}
+
+function setSourceStatus(src, cls, text) {
+  const el = document.getElementById(`st-${src}`);
+  el.className = 'source-status s-' + cls;
+  el.textContent = text;
+  const grp = document.getElementById(`src-${src}`);
+  grp.className = 'source-group ' + (cls === 'ok' ? 'done' : cls === 'err' ? 'error' : 'loading');
+}
+
+// ═══════════════════════════════════════════════════
+// IMAGES — PREVIEW + EXTRACTION
+// ═══════════════════════════════════════════════════
+function previewImages(inputId, previewId, zoneId) {
+  const input = document.getElementById(inputId);
+  const preview = document.getElementById(previewId);
+  const key = inputId === 'inp-bzh' ? 'bzh' : 'zt';
+
+  preview.innerHTML = '';
+  STATE.images[key] = [];
+
+  Array.from(input.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      STATE.images[key].push(e.target.result);
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      img.className = 'preview-img';
+      preview.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  log(`${input.files.length} image(s) chargée(s) pour ${key}`, 'ok');
+}
+
+async function extractImages() {
+  const hasBzh = STATE.images.bzh.length > 0;
+  const hasZt = STATE.images.zt.length > 0;
+
+  if (!hasBzh && !hasZt) {
+    log('Aucune image uploadée', 'err');
+    return;
+  }
+
+  document.getElementById('btn-extract').disabled = true;
+  setDot('loading');
+
+  if (hasBzh) {
+    log(`Extraction tableau turf.bzh (${STATE.images.bzh.length} image(s))...`, 'info');
+    await extractBzhImages();
+  }
+
+  if (hasZt) {
+    log(`Extraction tableau presse zone-turf (${STATE.images.zt.length} image(s))...`, 'info');
+    await extractZtImages();
+  }
+
+  document.getElementById('btn-extract').disabled = false;
+  buildHorsesTable();
+  checkAllDone();
+}
+
+async function extractBzhImages() {
+  const content = [
+    {
+      type: 'text',
+      text: `Voici des captures d'écran du tableau turf.bzh pour une course hippique.
+Extrais TOUTES les données visibles pour chaque cheval numéroté.
+Cherche les colonnes : N°, Popularité, évolution popularité, HISTO (courses-victoires-places), 
+Cote PMU, CoteBZH, ELO Cheval, ELO Jockey, ELO Coach/Entraîneur, 
+% Gagnant, % Couplé, % Trio, % Multi, % Quinté, Note IA.
+
+Réponds UNIQUEMENT en JSON : 
+{"horses":[{"num":1,"popularite":346,"evo_pop":200,"histo":"7-1-3-0","v_pct":14,"p_pct":57,"cote_pmu":5.4,"cote_bzh":3.7,"elo_cheval":1476,"elo_jockey":1512,"elo_coach":1476,"pct_gagnant":11.9,"pct_quinte":54.8,"note_ia":15.2,"note_ia_signal":"ok"},...]}
+Pour note_ia_signal : "ok" si ✅, "neutre" si ⚖️, "bad" si ❌.`
+    },
+    ...STATE.images.bzh.map(img => ({
+      type: 'image',
+      source: { type: 'base64', media_type: 'image/png', data: img.split(',')[1] }
+    }))
+  ];
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.map(c => c.text || '').join('') || '';
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+
+    if (parsed.horses) {
+      parsed.horses.forEach(h => {
+        const existing = STATE.horses.find(x => x.num === h.num);
+        if (existing) Object.assign(existing, h);
+        else STATE.horses.push(h);
+      });
+      log(`turf.bzh : ${parsed.horses.length} chevaux extraits`, 'ok');
+    }
+  } catch(e) {
+    log(`Erreur extraction turf.bzh : ${e.message}`, 'err');
+  }
+}
+
+async function extractZtImages() {
+  const content = [
+    {
+      type: 'text',
+      text: `Voici une capture d'écran du tableau de la presse hippique (zone-turf).
+Il montre les rangs attribués par différents journaux/médias (i-Turf, Bilto, Europe1, Le Parisien, Paris Courses, Tiercé Magazine, Tropiques FM, Week-End, etc.) à chaque cheval.
+Chaque ligne = un médium, chaque colonne = un cheval avec son numéro.
+
+Extrais le rang de chaque cheval pour chaque source.
+Réponds UNIQUEMENT en JSON :
+{"presse":[{"source":"i-Turf","rangs":{1:3,2:7,5:1,...}},{"source":"Bilto","rangs":{...}},...]}
+Les rangs sont les positions (1=premier choix, 2=deuxième, etc.).
+Si un cheval n'est pas mentionné par une source, omets-le.`
+    },
+    ...STATE.images.zt.map(img => ({
+      type: 'image',
+      source: { type: 'base64', media_type: 'image/png', data: img.split(',')[1] }
+    }))
+  ];
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.map(c => c.text || '').join('') || '';
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+
+    if (parsed.presse) {
+      STATE.presseSources = parsed.presse;
+      log(`Presse : ${parsed.presse.length} sources extraites`, 'ok');
+      // Calculer les scores Borda presse
+      computePresseBorda(parsed.presse);
+    }
+  } catch(e) {
+    log(`Erreur extraction zone-turf : ${e.message}`, 'err');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// BORDA PRESSE
+// ═══════════════════════════════════════════════════
+function computePresseBorda(sources) {
+  const n = 16; // nb partants max
+  const scores = {};
+
+  sources.forEach(src => {
+    Object.entries(src.rangs).forEach(([num, rang]) => {
+      const k = parseInt(num);
+      if (!scores[k]) scores[k] = 0;
+      scores[k] += (n - rang); // Borda : n-1 pour rang 1, etc.
+    });
+  });
+
+  // Normaliser sur 100
+  const max = Math.max(...Object.values(scores));
+  Object.entries(scores).forEach(([num, score]) => {
+    const h = STATE.horses.find(x => x.num === parseInt(num));
+    if (h) h.borda_presse = Math.round(score / max * 100);
+    else STATE.horses.push({ num: parseInt(num), borda_presse: Math.round(score / max * 100) });
+  });
+
+  log(`Borda presse calculé pour ${Object.keys(scores).length} chevaux`, 'ok');
+}
+
+// ═══════════════════════════════════════════════════
+// APPEL CLAUDE TEXT
+// ═══════════════════════════════════════════════════
+async function callClaudeWithText(prompt, images = []) {
+  const content = [{ type: 'text', text: prompt }];
+  images.forEach(img => content.push({
+    type: 'image',
+    source: { type: 'base64', media_type: 'image/png', data: img.split(',')[1] }
+  }));
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content }]
+    })
+  });
+  const data = await response.json();
+  return data.content?.map(c => c.text || '').join('') || '';
+}
+
+// ═══════════════════════════════════════════════════
+// CONSTRUIRE TABLE HORSES depuis sources textuelles
+// ═══════════════════════════════════════════════════
+function buildHorsesTable() {
+  // Intégrer données PMU (noms, jockeys...)
+  if (STATE.sources.pmu.data?.partants) {
+    STATE.sources.pmu.data.partants.forEach(p => {
+      const h = STATE.horses.find(x => x.num === p.num);
+      if (h) Object.assign(h, { nom: p.nom, jockey: p.jockey, entraineur: p.entraineur, poids: p.poids, musique: p.musique });
+      else STATE.horses.push(p);
+    });
+  }
+
+  // Intégrer Borda turf.bzh IA
+  if (STATE.sources.bzh.data?.borda) {
+    STATE.sources.bzh.data.borda.forEach(b => {
+      const h = STATE.horses.find(x => x.num === b.num);
+      if (h) h.borda_bzh = b.score;
+      else STATE.horses.push({ num: b.num, borda_bzh: b.score });
+    });
+  }
+
+  // Intégrer rangs ZEturf
+  if (STATE.sources.zeturf.data?.selection) {
+    STATE.sources.zeturf.data.selection.forEach((num, idx) => {
+      const h = STATE.horses.find(x => x.num === num);
+      const score = Math.round((STATE.horses.length - idx) / STATE.horses.length * 100);
+      if (h) h.rang_zeturf = idx + 1;
+      else STATE.horses.push({ num, rang_zeturf: idx + 1 });
+    });
+  }
+
+  STATE.activeSourcesCount = Object.values(STATE.sources).filter(s => s.status === 'ok').length;
+  document.getElementById('s-sources').textContent = STATE.activeSourcesCount;
+  document.getElementById('s-partants').textContent = STATE.horses.length || '—';
+}
+
+// ═══════════════════════════════════════════════════
+// CALCUL BORDA FINAL
+// ═══════════════════════════════════════════════════
+function computeFinalBorda() {
+  if (STATE.horses.length === 0) return;
+
+  const W = STATE.weights;
+  const n = STATE.horses.length;
+
+  // Normaliser chaque dimension sur 100
+  const normalize = (arr, key) => {
+    const vals = arr.map(h => h[key] || 0);
+    const max = Math.max(...vals) || 1;
+    arr.forEach(h => h[`_n_${key}`] = (h[key] || 0) / max * 100);
+  };
+
+  normalize(STATE.horses, 'borda_presse');
+  normalize(STATE.horses, 'borda_bzh');
+  normalize(STATE.horses, 'elo_cheval');
+  normalize(STATE.horses, 'pct_quinte');
+  normalize(STATE.horses, 'note_ia');
+
+  // Score composite
+  STATE.horses.forEach(h => {
+    h.score_final = Math.round(
+      (h._n_borda_presse || 0) * W.presse +
+      (h._n_borda_bzh || 0) * W.bzhIA +
+      (h._n_elo_cheval || 0) * W.elo +
+      (h._n_pct_quinte || 0) * W.quinteProb +
+      (h._n_note_ia || 0) * W.noteIA
+    );
+
+    // Value bet
+    if (h.cote_pmu && h.cote_bzh) {
+      // P_modele approx = pct_quinte / 100 / 5 (prob de gagner)
+      const pModel = (h.pct_gagnant || 0) / 100;
+      h.value = +(pModel * h.cote_pmu - 1).toFixed(2);
+    }
+  });
+
+  // Trier
+  STATE.horses.sort((a, b) => (b.score_final || 0) - (a.score_final || 0));
+
+  // Calculer indice consensus (écart-type des rangs Borda)
+  const scores = STATE.horses.map(h => h.score_final || 0);
+  const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+  const variance = scores.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / scores.length;
+  const stdDev = Math.sqrt(variance);
+  const consensus = Math.min(100, Math.round(stdDev / mean * 100));
+  document.getElementById('s-consensus').textContent = consensus + '%';
+}
+
+// ═══════════════════════════════════════════════════
+// AFFICHAGE BORDA TABLE
+// ═══════════════════════════════════════════════════
+function renderBordaTable() {
+  const tbody = document.getElementById('borda-tbody');
+  if (STATE.horses.length === 0) return;
+
+  computeFinalBorda();
+  tbody.innerHTML = '';
+
+  STATE.horses.forEach((h, i) => {
+    const rank = i + 1;
+    const valueCls = h.value > 0.1 ? 'value-positive' : h.value < -0.1 ? 'value-negative' : 'value-neutral';
+    const valueText = h.value !== undefined ? (h.value > 0 ? '+' : '') + h.value : '—';
+
+    const signal = getSignal(h);
+    const noteCls = h.note_ia_signal === 'ok' ? 'pill-green' : h.note_ia_signal === 'bad' ? 'pill-red' : 'pill-gray';
+    const noteText = h.note_ia ? `${h.note_ia_signal === 'ok' ? '✅' : h.note_ia_signal === 'bad' ? '❌' : '⚖️'} ${h.note_ia}` : '—';
+
+    const barColor = rank <= 3 ? 'var(--gold)' : rank <= 6 ? 'var(--blue)' : 'var(--muted)';
+
+    const tr = document.createElement('tr');
+    if (rank === 1) tr.classList.add('rank1');
+    tr.innerHTML = `
+      <td>
+        <span class="rank-badge ${rank <= 3 ? 'rank-' + rank : ''}" style="${rank > 3 ? 'background:var(--subtle);color:var(--muted)' : ''}">
+          ${rank}
+        </span>
+      </td>
+      <td>
+        <span class="num-badge" style="border-color:${rank <= 5 ? 'var(--gold)' : 'var(--border2)'};color:${rank <= 5 ? 'var(--gold)' : 'var(--text)'}">
+          ${h.num}
+        </span>
+      </td>
+      <td>
+        <div style="font-weight:500">${h.nom || `Cheval N°${h.num}`}</div>
+        ${h.jockey ? `<div style="font-size:11px;color:var(--muted)">${h.jockey}</div>` : ''}
+      </td>
+      <td>
+        <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:${barColor}">
+          ${h.score_final || 0}
+        </div>
+        <div class="bar-wrap mt8">
+          <div class="bar-fill" style="width:${h.score_final || 0}%;background:${barColor}"></div>
+        </div>
+      </td>
+      <td>
+        ${h.borda_presse !== undefined ? `<span class="pill pill-blue">${h.borda_presse}</span>` : '<span class="text-muted">—</span>'}
+      </td>
+      <td>
+        ${h.borda_bzh !== undefined ? `<span class="pill pill-gold">${h.borda_bzh}</span>` : '<span class="text-muted">—</span>'}
+      </td>
+      <td>
+        <span style="font-family:var(--font-mono);font-size:13px;color:${(h.pct_quinte||0)>45?'var(--green)':'var(--text)'}">
+          ${h.pct_quinte ? h.pct_quinte + '%' : '—'}
+        </span>
+      </td>
+      <td><span class="pill ${noteCls}">${noteText}</span></td>
+      <td>
+        <div style="font-family:var(--font-mono);font-size:12px">
+          ${h.popularite || '—'}
+          ${h.evo_pop ? `<span style="color:${h.evo_pop > 50 ? 'var(--green)' : 'var(--muted)'};font-size:10px"> +${h.evo_pop}</span>` : ''}
+        </div>
+      </td>
+      <td>
+        <span class="${valueCls}" style="font-family:var(--font-mono);font-size:13px">
+          ${valueText}
+        </span>
+      </td>
+      <td>${signal}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function getSignal(h) {
+  if (h.note_ia_signal === 'bad' && (h.evo_pop || 0) > 30) {
+    return '<span class="pill pill-red">⚠️ Faux favori</span>';
+  }
+  if (h.value > 0.2 && h.note_ia_signal !== 'bad') {
+    return '<span class="pill pill-green">✅ Value</span>';
+  }
+  if (h.note_ia_signal === 'ok' && (h.borda_presse || 0) > 60) {
+    return '<span class="pill pill-gold">⭐ Base</span>';
+  }
+  return '<span class="pill pill-gray">—</span>';
+}
+
+// ═══════════════════════════════════════════════════
+// RECOMMANDATION
+// ═══════════════════════════════════════════════════
+function renderReco() {
+  if (STATE.horses.length === 0) return;
+
+  computeFinalBorda();
+  const sorted = [...STATE.horses].sort((a, b) => (b.score_final || 0) - (a.score_final || 0));
+  const top5 = sorted.slice(0, 5);
+  const top8 = sorted.slice(0, 8);
+
+  // Trouver value bets
+  const valueBets = sorted.filter(h => (h.value || 0) > 0.1 && h.note_ia_signal !== 'bad');
+  // Trouver faux favoris
+  const fauxFav = sorted.filter(h => h.note_ia_signal === 'bad' && (h.evo_pop || 0) > 20);
+
+  // Indice confiance
+  const topScore = sorted[0]?.score_final || 0;
+  const gap = topScore - (sorted[4]?.score_final || 0);
+  const confidence = Math.min(5, Math.round(gap / 10));
+
+  const confColor = confidence >= 4 ? 'var(--green)' : confidence >= 3 ? 'var(--gold)' : 'var(--red)';
+
+  const container = document.getElementById('reco-container');
+  container.innerHTML = `
+    <div class="reco-box mb24">
+      <div class="reco-title">🎯 Quinté recommandé</div>
+      <div class="reco-nums">
+        ${top5.map((h, i) => `
+          <div>
+            <div class="reco-num ${i === 0 ? 'base' : ''}">${h.num}</div>
+            <div class="reco-label" style="text-align:center;font-size:10px">${i === 0 ? 'BASE' : '#' + (i + 1)}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="confidence-bar">
+        <span class="conf-label">Confiance</span>
+        <div class="conf-track">
+          <div class="conf-fill" style="width:${confidence * 20}%;background:${confColor}"></div>
+        </div>
+        <span class="conf-label">${confidence}/5</span>
+      </div>
+    </div>
+
+    <div class="grid2 mb16">
+      <div class="card">
+        <div class="card-title">📋 Couverture 8 chevaux</div>
+        <div class="reco-nums">
+          ${top8.map((h, i) => `
+            <div class="reco-num ${i < 5 ? '' : 'cover'}" style="width:36px;height:36px;font-size:13px">${h.num}</div>
+          `).join('')}
+        </div>
+        <div class="text-muted mt8">Désordre recommandé — course très ouverte</div>
+      </div>
+      <div class="card">
+        <div class="card-title">💰 Jeux simples</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+          <div class="flex-center jb">
+            <span class="text-muted">Simple Gagnant</span>
+            <span class="text-mono text-gold bold">N°${sorted[0]?.num || '—'}</span>
+          </div>
+          <div class="flex-center jb">
+            <span class="text-muted">Simple Placé</span>
+            <span class="text-mono bold">N°${sorted[1]?.num || '—'}</span>
+          </div>
+          <div class="flex-center jb">
+            <span class="text-muted">Couplé</span>
+            <span class="text-mono bold">${sorted[0]?.num || '—'} / ${sorted[1]?.num || '—'}</span>
+          </div>
+          <div class="flex-center jb">
+            <span class="text-muted">Trio désordre</span>
+            <span class="text-mono bold">${top5.slice(0,3).map(h=>h.num).join(' - ')}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${valueBets.length > 0 ? `
+    <div class="card mb16">
+      <div class="card-title">✅ Value Bets détectés</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${valueBets.slice(0, 4).map(h => `
+          <div class="flex-center jb">
+            <div class="flex-center gap8">
+              <span class="num-badge" style="border-color:var(--green);color:var(--green)">${h.num}</span>
+              <div>
+                <div style="font-size:13px;font-weight:500">${h.nom || 'N°' + h.num}</div>
+                <div class="text-muted">Cote PMU ${h.cote_pmu}€ · BZH ${h.cote_bzh}€</div>
+              </div>
+            </div>
+            <span class="pill pill-green">+${h.value}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    ${fauxFav.length > 0 ? `
+    <div class="card mb16">
+      <div class="card-title">⚠️ Faux favoris à éviter</div>
+      ${fauxFav.map(h => `
+        <div class="flex-center gap8" style="margin-bottom:8px">
+          <span class="num-badge" style="border-color:var(--red);color:var(--red)">${h.num}</span>
+          <div>
+            <div style="font-size:13px">${h.nom || 'N°' + h.num}</div>
+            <div class="text-muted">Note IA ❌${h.note_ia} — Popularité +${h.evo_pop} mais signaux négatifs</div>
+          </div>
+          <span class="pill pill-red">IMPASSE</span>
+        </div>
+      `).join('')}
+    </div>
+    ` : ''}
+
+    <div class="card">
+      <div class="card-title">📊 Classement complet</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${sorted.map((h, i) => `
+          <div class="flex-center jb" style="padding:6px 0;border-bottom:1px solid var(--border)20">
+            <div class="flex-center gap8">
+              <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);width:20px">#${i+1}</span>
+              <span class="num-badge" style="border-color:${i<5?'var(--gold)':'var(--border2)'};color:${i<5?'var(--gold)':'var(--text)'}">${h.num}</span>
+              <span style="font-size:13px">${h.nom || 'Cheval N°' + h.num}</span>
+            </div>
+            <div class="flex-center gap8">
+              <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">${h.cote_pmu ? h.cote_pmu + '€' : ''}</span>
+              <span style="font-family:var(--font-mono);font-size:13px;font-weight:600">${h.score_final || 0}</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+// PONDÉRATIONS
+// ═══════════════════════════════════════════════════
+function renderWeights() {
+  const grid = document.getElementById('weights-grid');
+  const labels = {
+    presse: 'Borda Presse',
+    bzhIA: 'Borda 10 IA',
+    elo: 'ELO Cheval',
+    quinteProb: '% Quinté IA',
+    noteIA: 'Note IA'
+  };
+  grid.innerHTML = Object.entries(STATE.weights).map(([key, val]) => `
+    <div>
+      <div class="text-muted mb8">${labels[key]}</div>
+      <div class="flex-center gap8">
+        <input type="range" min="0" max="50" value="${Math.round(val * 100)}"
+          oninput="updateWeight('${key}', this.value)"
+          style="flex:1;accent-color:var(--gold)">
+        <span id="w-${key}" style="font-family:var(--font-mono);font-size:12px;color:var(--gold);width:32px">
+          ${Math.round(val * 100)}%
+        </span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateWeight(key, val) {
+  STATE.weights[key] = val / 100;
+  document.getElementById(`w-${key}`).textContent = val + '%';
+}
+
+function resetWeights() {
+  STATE.weights = { presse: 0.20, bzhIA: 0.25, elo: 0.20, quinteProb: 0.20, noteIA: 0.15 };
+  renderWeights();
+}
+
+function recalcBorda() {
+  renderBordaTable();
+  renderReco();
+  log('Borda recalculé avec nouvelles pondérations', 'ok');
+}
+
+// ═══════════════════════════════════════════════════
+// BACKTESTING
+// ═══════════════════════════════════════════════════
+function saveResult() {
+  const arrivee = [1,2,3,4,5].map(i =>
+    parseInt(document.getElementById(`bt-arr${i}`).value) || 0
+  ).filter(n => n > 0);
+
+  if (arrivee.length < 5) {
+    log('Entrez les 5 premiers de l\'arrivée', 'err');
+    return;
+  }
+
+  const sorted = [...STATE.horses].sort((a, b) => (b.score_final || 0) - (a.score_final || 0));
+  const predicted = sorted.slice(0, 5).map(h => h.num);
+  const found = arrivee.filter(n => predicted.includes(n)).length;
+
+  const entry = {
+    date: STATE.date,
+    hippo: STATE.hippo,
+    reunion: STATE.reunion,
+    course: STATE.course,
+    predicted,
+    arrivee,
+    found,
+    success: found >= 3
+  };
+
+  HISTORY.push(entry);
+  localStorage.setItem('quinte_history', JSON.stringify(HISTORY));
+  renderHistory();
+  log(`Résultat enregistré : ${found}/5 trouvés`, found >= 3 ? 'ok' : 'warn');
+}
+
+function renderHistory() {
+  const list = document.getElementById('bt-list');
+  if (HISTORY.length === 0) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:20px 0">Aucune course enregistrée.</div>';
+    return;
+  }
+
+  const successes = HISTORY.filter(h => h.success).length;
+  document.getElementById('bt-courses').textContent = HISTORY.length;
+  document.getElementById('bt-top5').textContent = Math.round(successes / HISTORY.length * 100) + '%';
+
+  list.innerHTML = [...HISTORY].reverse().map(entry => `
+    <div class="bt-row">
+      <div>
+        <div class="bt-date">${entry.date} · ${entry.hippo} ${entry.reunion}${entry.course}</div>
+        <div class="bt-nums" style="margin-top:4px">
+          Prédit : ${entry.predicted.join('-')} · Arrivée : ${entry.arrivee.join('-')}
+        </div>
+      </div>
+      <span class="pill ${entry.found >= 5 ? 'pill-gold' : entry.found >= 3 ? 'pill-green' : 'pill-red'}">
+        ${entry.found}/5
+      </span>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// MISC
+// ═══════════════════════════════════════════════════
+function setDot(state) {
+  const dot = document.getElementById('status-dot');
+  dot.className = state;
+}
+
+function checkAllDone() {
+  const anyDone = Object.values(STATE.sources).some(s => s.status === 'ok') ||
+                  STATE.horses.length > 0;
+  document.getElementById('btn-analyse').disabled = !anyDone;
+}
+
+function goToAnalysis() {
+  buildHorsesTable();
+  renderWeights();
+  renderBordaTable();
+  renderReco();
+  document.querySelector('.nav-btn:nth-child(2)').click();
+  document.getElementById('s-terrain').textContent = '—';
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  renderHistory();
+  renderWeights();
+  // Pré-remplir la date du jour
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('input-date').value = today;
+});
+</script>
+
+</body>
+</html>
